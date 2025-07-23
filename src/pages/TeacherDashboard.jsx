@@ -1,10 +1,20 @@
+// src/pages/TeacherDashboard.jsx
 import styled from "styled-components";
 import { useAuth } from "../contexts/AuthContext";
+import CreateExamSection from "../sections/CreateExamSection";
+import TeacherExamsSection from "../sections/TeachersExamsSection";
+import Sidebar from "../components/Sidebar";
+import { useEffect, useState } from "react";
+import { getAllClassesService } from "../services/classService";
 
-const Container = styled.div`
+const MainContainer = styled.div`
+  display: flex;
+  min-height: 100vh;
+`;
+
+const Content = styled.div`
+  flex-grow: 1;
   padding: 40px;
-  max-width: 800px;
-  margin: 0 auto;
 `;
 
 const Title = styled.h1`
@@ -18,25 +28,48 @@ const Info = styled.p`
 `;
 
 const TeacherDashboard = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const [classes, setClasses] = useState([]);
+
+  useEffect(() => {
+    getAllClassesService()
+      .then(setClasses)
+      .catch(() => console.error("Erro ao carregar turmas"));
+  }, []);
 
   return (
-    <Container>
-      <Title>Painel do Professor</Title>
-      <Info><strong>Nome:</strong> {user?.name}</Info>
-      <Info><strong>Email:</strong> {user?.email}</Info>
-      <Info><strong>Role:</strong> {user?.role}</Info>
+    <MainContainer>
+      <Sidebar tipo="professor" />
 
-      <hr style={{ margin: "20px 0" }} />
+      <Content>
+        <Title>Painel do Professor</Title>
 
-      <p>A partir deste painel, o professor poderá:</p>
-      <ul>
-        <li>Cadastrar novas provas</li>
-        <li>Ver turmas e alunos</li>
-        <li>Acompanhar desempenho</li>
-        <li>Corrigir provas (futuramente)</li>
-      </ul>
-    </Container>
+        <Info><strong>Nome:</strong> {user?.name}</Info>
+        <Info><strong>Email:</strong> {user?.email}</Info>
+        <Info><strong>Role:</strong> {user?.role}</Info>
+
+        <hr style={{ margin: "20px 0" }} />
+
+        <p>A partir deste painel, o professor poderá:</p>
+        <ul>
+          <li>Cadastrar novas provas</li>
+          <li>Ver turmas e alunos</li>
+          <li>Acompanhar desempenho</li>
+          <li>Corrigir provas (futuramente)</li>
+        </ul>
+
+        <hr style={{ margin: "40px 0" }} />
+
+        <CreateExamSection
+          token={token}
+          classes={classes}
+          teacherId={user?.id}
+        />
+        <TeacherExamsSection
+         token={token}
+         teacherId={user.id} />
+      </Content>
+    </MainContainer>
   );
 };
 

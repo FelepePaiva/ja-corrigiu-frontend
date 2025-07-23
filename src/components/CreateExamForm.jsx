@@ -1,95 +1,131 @@
-import styled from "styled-components";
+// src/components/CreateExamForm.jsx
 
-const Container = styled.div`
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px #ccc;
-  max-width: 500px;
-  margin: 0 auto;
-`;
+import { useEffect, useState } from "react";
+import Input from "./Input";
+import Select from "./Select";
+import Button from "./Button";
+import RadioOption from "./RadioButton";
 
-const Title = styled.h2`
-  text-align: center;
-  margin-bottom: 20px;
-`;
+const alternativas = ["A", "B", "C", "D", "E"];
 
-// Demais estilos conforme seu padrão
-
-const ExamForm = ({
+const CreateExamForm = ({
   form,
   onChange,
   onSubmit,
-  message,
-  teachers,
   classes,
-}) => (
-  <Container>
-    <Title>Cadastrar Nova Prova</Title>
-    <form onSubmit={onSubmit}>
-      <input
+  message,
+}) => {
+  const [selectedAnswers, setSelectedAnswers] = useState([]);
+
+  // Atualiza o state quando questions_count mudar
+  useEffect(() => {
+    const qnt = parseInt(form.questions_count);
+    if (qnt > 0) {
+      const nova = Array(qnt).fill("");
+      setSelectedAnswers(nova);
+    }
+  }, [form.questions_count]);
+
+  // Atualiza a resposta da questão no índice correto
+  const handleRadioSelect = (index, value) => {
+    const atualizadas = [...selectedAnswers];
+    atualizadas[index] = value;
+    setSelectedAnswers(atualizadas);
+  };
+
+  // Atualiza o answer_key com base no state
+  useEffect(() => {
+    onChange({
+      target: { name: "answer_key", value: selectedAnswers.join(",") },
+    });
+  }, [selectedAnswers]);
+
+  return (
+    <form onSubmit={onSubmit} style={{ maxWidth: 640 }}>
+      <Input
         type="text"
         name="title"
-        placeholder="Título da prova"
+        placeholder="Título da Prova"
         value={form.title}
         onChange={onChange}
         required
       />
-      <input
-        type="number"
-        name="questions_count"
-        placeholder="Qtd. de questões"
-        value={form.questions_count}
-        onChange={onChange}
-        required
-        min="1"
-      />
-      <input
-        type="text"
-        name="answer_key"
-        placeholder='Gabarito (ex: A,B,C,D,E)'
-        value={form.answer_key}
-        onChange={onChange}
-        required
-      />
-      <select
-        name="bimester"
-        value={form.bimester}
-        onChange={onChange}
-        required
-      >
-        <option value="">Selecione o bimestre</option>
-        <option value="1">1º Bimestre</option>
-        <option value="2">2º Bimestre</option>
-        <option value="3">3º Bimestre</option>
-        <option value="4">4º Bimestre</option>
-      </select>
-      <select
-        name="teacherId"
-        value={form.teacherId}
-        onChange={onChange}
-        required
-      >
-        <option value="">Selecione o professor</option>
-        {teachers.map((t) => (
-          <option key={t.id} value={t.id}>{t.name}</option>
-        ))}
-      </select>
-      <select
+
+      <Select
         name="classId"
         value={form.classId}
         onChange={onChange}
         required
       >
-        <option value="">Selecione a sala</option>
-        {classes.map((cls) => (
-          <option key={cls.id} value={cls.id}>{cls.code}</option>
-        ))}
-      </select>
-      <button type="submit">Cadastrar</button>
-      {message && <p>{message}</p>}
-    </form>
-  </Container>
-);
+        <option value="">Selecione a turma</option>
+        {Array.isArray(classes) &&
+          classes.map((turma) => (
+            <option key={turma.id} value={turma.id}>
+              {turma.code}
+            </option>
+          ))}
+      </Select>
 
-export default ExamForm;
+      <Input
+        type="number"
+        name="questions_count"
+        min={1}
+        placeholder="Quantidade de Questões"
+        value={form.questions_count}
+        onChange={onChange}
+        required
+      />
+
+      <Input
+        type="number"
+        name="bimester"
+        min={1}
+        max={4}
+        placeholder="Bimestre"
+        value={form.bimester}
+        onChange={onChange}
+        required
+      />
+
+      {/* Gabarito via radio */}
+      {form.questions_count > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h3>Gabarito</h3>
+          {Array.from({ length: parseInt(form.questions_count) }, (_, i) => (
+            <div key={i} style={{ marginBottom: 12 }}>
+              <label style={{ marginRight: 16 }}>Questão {i + 1}:</label>
+              {alternativas.map((alt) => (
+                <label key={alt} style={{ marginRight: 12 }}>
+                  <RadioOption
+                    type="radio"
+                    name={`question_${i}`}
+                    value={alt}
+                    checked={selectedAnswers[i] === alt}
+                    onChange={() => handleRadioSelect(i, alt)}
+                  />{" "}
+                  {alt}
+                </label>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Button type="submit">Cadastrar Prova</Button>
+
+      {message && (
+        <p
+          style={{
+            textAlign: "center",
+            color: message.startsWith("Erro") ? "#cb2222" : "#27ae60",
+            marginTop: 12,
+          }}
+        >
+          {message}
+        </p>
+      )}
+    </form>
+  );
+};
+
+export default CreateExamForm;

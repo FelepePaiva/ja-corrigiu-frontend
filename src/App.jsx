@@ -1,50 +1,58 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+// src/App.jsx
+import { Routes, Route, Navigate } from "react-router-dom";
 import { GlobalStyle } from "./styles/GlobalConfig";
-import Home from './pages/Home'
+import Home from "./pages/Home";
 import Login from "./pages/Login";
-import AdminDashboard from "./pages/AdminDashboard";
-import TeacherDashboard from "./pages/TeacherDashboard";
+
+import AdminRoutes from "./pages/AdminRoutes";
+import TeacherRoutes from "./pages/TeacherRoutes"; // ✅ novo
 import StudentDashboard from "./pages/StudentDashboard";
+
 import RoleRoute from "./components/RoleRoute";
 import Navbar from "./components/NavBar";
 import { useAuth } from "./contexts/AuthContext";
-import CreateStudent from "./pages/CreateStudent";
 
 const App = () => {
-  const {isAuthenticated} = useAuth();
+  const { isAuthenticated, user, token } = useAuth();
+
   return (
     <>
       <GlobalStyle />
-      <BrowserRouter>
       {isAuthenticated && <Navbar />}
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<RoleRoute allowedRoles={["admin"]}>
-            <AdminDashboard />
-            </RoleRoute>
-          }
-          />
-          <Route
-          path="/admin/create-student"
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/admin/*"
           element={
-          <RoleRoute allowedRoles={["admin"]}>
-          <CreateStudent />
-          </RoleRoute>
-    }
-  />
-          <Route path="/teacher" element={<RoleRoute allowedRoles={["teacher"]}>
-            <TeacherDashboard />
+            <RoleRoute allowedRoles={["admin"]}>
+              <AdminRoutes />
             </RoleRoute>
           }
-          />
-          <Route path="/student" element={<RoleRoute allowedRoles={["student"]}>
-            <StudentDashboard />
+        />
+
+        <Route
+          path="/teacher/*"
+          element={
+            <RoleRoute allowedRoles={["teacher"]}>
+              <TeacherRoutes token={token} user={user} />
             </RoleRoute>
           }
-          />
-        </Routes>
-      </BrowserRouter>
+        />
+
+        <Route
+          path="/student"
+          element={
+            <RoleRoute allowedRoles={["student"]}>
+              <StudentDashboard />
+            </RoleRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </>
   );
 };

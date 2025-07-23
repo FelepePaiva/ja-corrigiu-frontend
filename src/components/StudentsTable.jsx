@@ -3,6 +3,7 @@ import axios from "axios";
 import styled from "styled-components";
 import { useAuth } from "../contexts/AuthContext";
 
+// Styled-components
 const TableContainer = styled.div`padding: 20px;`;
 const StyledTable = styled.table`
   width: 100%;
@@ -58,26 +59,39 @@ const StudentsTable = () => {
   const [students, setStudents] = useState([]);
   const [filterClassCode, setFilterClassCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentClassCode, setCurrentClassCode] = useState(""); // para mostrar a sala
 
   const fetchStudents = async () => {
     setLoading(true);
     try {
       let res;
-
       if (filterClassCode.trim()) {
-        res = await axios.get(`http://localhost:3000/v1/student/${filterClassCode}/class`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Busca alunos de uma sala específica
+        res = await axios.get(
+          `http://localhost:3000/v1/student/${filterClassCode}/class`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (res.data && res.data.students) {
+          setCurrentClassCode(res.data.code || "");
+          setStudents(res.data.students);
+        } else {
+          setCurrentClassCode("");
+          setStudents([]);
+        }
       } else {
+        // Busca todos os alunos
         res = await axios.get("http://localhost:3000/v1/student", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        setCurrentClassCode("");
+        setStudents(res.data || []);
       }
-
-      setStudents(res.data || []);
     } catch (error) {
       console.error("Erro ao buscar alunos:", error);
       setStudents([]);
+      setCurrentClassCode("");
     } finally {
       setLoading(false);
     }
@@ -85,6 +99,7 @@ const StudentsTable = () => {
 
   useEffect(() => {
     fetchStudents();
+    // eslint-disable-next-line
   }, []);
 
   const handleFilterChange = (e) => {
@@ -140,8 +155,23 @@ const StudentsTable = () => {
             placeholder="Ex: 6AT"
           />
           <Button type="submit">Buscar</Button>
+          <Button
+            type="button"
+            onClick={() => {
+              setFilterClassCode("");
+              fetchStudents();
+            }}
+          >
+            Limpar
+          </Button>
         </FilterContainer>
       </form>
+
+      {currentClassCode && (
+        <p>
+          <strong>Sala atual:</strong> {currentClassCode}
+        </p>
+      )}
 
       {loading ? (
         <p>Carregando...</p>
@@ -168,7 +198,9 @@ const StudentsTable = () => {
                 <Td>{student.email}</Td>
                 <Td>{student.cpf}</Td>
                 <Td>{student.registration_code}</Td>
-                <Td>{student.Class?.code || "—"}</Td>
+                {/* Se filtrando, mostra o código da sala retornado; 
+                    Se listar todos, pode mostrar -- (ou adaptar p/ outro campo se sua API devolver) */}
+                <Td>{currentClassCode || "—"}</Td>
                 <Td>
                   <RemoveButton onClick={() => handleRemove(student.id)}>
                     Remover

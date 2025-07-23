@@ -1,7 +1,9 @@
 import { useState } from "react";
-import ExamForm from "../components/CreateExamForm";
-// (Você pode criar/usar ExamsTable depois, se quiser listar provas)
+import CreateExamForm from "../components/CreateExamForm";
 import { createExamService } from "../services/examService";
+import Select from "../components/Select";
+import Input from "../components/Input";
+import Button from "../components/Button";
 
 const CreateExamSection = ({ token, classes, teacherId }) => {
   const [showForm, setShowForm] = useState(false);
@@ -64,12 +66,12 @@ const CreateExamSection = ({ token, classes, teacherId }) => {
   return (
     <section>
       <div style={{ margin: "20px 0" }}>
-        <button onClick={toggleForm}>
+        <Button onClick={toggleForm}>
           {showForm ? "Fechar Cadastro de Prova" : "Cadastrar Nova Prova"}
-        </button>
+        </Button>
       </div>
       {showForm && (
-        <ExamForm
+        <CreateExamForm
           form={form}
           onChange={handleChange}
           onSubmit={handleSubmit}

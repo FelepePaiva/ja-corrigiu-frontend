@@ -94,11 +94,13 @@ const StudentForm = ({ form, onChange, onSubmit, classes, message }) => {
           required
         >
           <option value="">Selecione uma classe</option>
-          {classes.map((cls) => (
-            <option key={cls.id} value={cls.id}>
-              {cls.code}
-            </option>
-          ))}
+          {Array.isArray(classes) &&
+  classes.map((cls) => (
+    <option key={cls.id} value={cls.id}>
+      {cls.code}
+    </option>
+))}
+
         </Select>
 
         <Button type="submit">Cadastrar</Button>

@@ -167,7 +167,7 @@ const TeachersTable = () => {
                 <Td>{teacher.id}</Td>
                 <Td>{teacher.name}</Td>
                 <Td>{teacher.email}</Td>
-                <Td>{teacher.discipline?.name || "—"}</Td>
+                <Td>{teacher.discipline || "—"}</Td>
                 <Td>
                   <RemoveButton onClick={() => handleRemove(teacher.id)}>
                     Remover

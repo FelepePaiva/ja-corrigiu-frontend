@@ -93,11 +93,12 @@ const TeacherForm = ({ form, onChange, onSubmit, disciplines, message }) => {
           required
         >
           <option value="">Selecione uma disciplina</option>
-          {disciplines.map((disc) => (
-            <option key={disc.id} value={disc.id}>
-              {disc.name}
-            </option>
-          ))}
+          {Array.isArray(disciplines) && disciplines.map((disc) => (
+         <option key={disc.id} value={disc.id}>
+          {disc.name}
+        </option>
+))}
+
         </Select>
 
         <Button type="submit">Cadastrar</Button>
